@@ -6,12 +6,18 @@ const initialItems = [
 ];
 
 export default function App() {
+  const [items, setItems] = useState(initialItems);
+
+  function handleAddItems(newItem) {
+    setItems((prevItems) => [...prevItems, newItem]);
+  }
+
   return (
     <div className="app">
       <Logo />
-      <Form />
-      <PackingList />
-      <Stats />
+      <Form onAddItems={handleAddItems} />
+      <PackingList items={items} />
+      <Stats items={items} />
     </div>
   );
 }
@@ -19,7 +25,8 @@ export default function App() {
 function Logo() {
   return <h1>🌴 Far Away 🎒</h1>;
 }
-function Form() {
+
+function Form({ onAddItems }) {
   const [description, setDescription] = useState("");
   const [quantity, setQuantity] = useState(1);
 
@@ -28,12 +35,13 @@ function Form() {
 
     if (!description) return;
 
-    const newItem = { description, quantity, package: false, id: Date.now() };
-    console.log(newItem);
+    const newItem = { description, quantity, packed: false, id: Date.now() };
+    onAddItems(newItem);
 
     setDescription("");
     setQuantity(1);
   }
+
   return (
     <form className="add-form" onSubmit={handleSubmit}>
       <h3>What do you need for your 😍 trip?</h3>
@@ -57,32 +65,43 @@ function Form() {
     </form>
   );
 }
-function PackingList() {
+
+function PackingList({ items }) {
   return (
     <div className="list">
       <ul>
-        {initialItems.map((item) => (
+        {items.map((item) => (
           <Item item={item} key={item.id} />
         ))}
       </ul>
     </div>
   );
 }
+
 function Item({ item }) {
   return (
     <li>
       <span style={item.packed ? { textDecoration: "line-through" } : {}}>
-        {item.description} {item.description}
+        {item.description} ({item.quantity})
       </span>
       <button>❌</button>
     </li>
   );
 }
-function Stats() {
+
+function Stats({ items }) {
+  const totalItems = items.length;
+  const packedItems = items.filter((item) => item.packed).length;
+  const packedPercentage =
+    totalItems === 0 ? 0 : Math.round((packedItems / totalItems) * 100);
+
   return (
     <div>
       <footer className="stats">
-        <em>💼 You have X items on your list, and you already packed X (X%)</em>
+        <em>
+          💼 You have {totalItems} items on your list, and you already packed{" "}
+          {packedItems} ({packedPercentage}%)
+        </em>
       </footer>
     </div>
   );
